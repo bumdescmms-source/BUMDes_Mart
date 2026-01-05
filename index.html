@@ -3,31 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem BUMDes CMMSC - Cloud Sync v7</title>
+    <title>BUMDes CMMSC - Sistem Akuntansi Terpadu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS KHUSUS CETAK - MEMASTIKAN HASIL TIDAK KOSONG */
         @media print {
             body * { visibility: hidden !important; }
-            #printable-invoice-area.active-print, 
-            #printable-invoice-area.active-print *,
-            #printable-report-area.active-print,
-            #printable-report-area.active-print * {
+            #printable-invoice-area.active-print, #printable-invoice-area.active-print *,
+            #printable-report-area.active-print, #printable-report-area.active-print * {
                 visibility: visible !important;
             }
-            #printable-invoice-area.active-print, 
-            #printable-report-area.active-print {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                display: block !important;
+            #printable-invoice-area.active-print, #printable-report-area.active-print {
+                position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important;
             }
             .no-print { display: none !important; }
-            @page { margin: 0.5cm; }
         }
-        .page { transition: opacity 0.2s ease; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -36,23 +26,24 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border-t-8 border-yellow-500">
             <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="mx-auto w-32 mb-4">
             <h2 class="text-2xl font-bold text-gray-800">Admin CMMSC</h2>
-            <input type="password" id="admin-pass" placeholder="Password Admin" class="w-full p-3 border rounded-lg my-4 text-center outline-none focus:ring-2 focus:ring-green-500">
-            <button onclick="checkLogin()" class="w-full bg-green-700 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-800">MASUK SISTEM</button>
+            <input type="password" id="admin-pass" placeholder="Password Admin" class="w-full p-3 border rounded-lg my-4 text-center outline-none">
+            <button onclick="checkLogin()" class="w-full bg-green-700 text-white py-3 rounded-lg font-bold shadow-lg">MASUK</button>
         </div>
     </div>
 
     <div id="main-app" class="hidden">
         <nav class="bg-white border-b shadow-md p-4 sticky top-0 z-50 no-print">
             <div class="container mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-10 h-10">
-                    <h1 class="font-bold text-green-800">BUMDes CMMSC</h1>
+                    <h1 class="font-bold text-green-800 hidden md:block text-sm">BUMDes CMMSC</h1>
                 </div>
-                <div class="flex gap-4 text-[10px] md:text-xs font-black uppercase">
-                    <button onclick="showPage('dashboard')">Dashboard</button>
-                    <button onclick="showPage('kelola-barang')">Stok</button>
-                    <button onclick="showPage('mart')">Kasir</button>
-                    <button onclick="showPage('sewa')">Sewa</button>
+                <div class="flex gap-2 text-[10px] font-black uppercase overflow-x-auto">
+                    <button onclick="showPage('dashboard')" class="px-2 py-1">Dashboard</button>
+                    <button onclick="showPage('kelola-barang')" class="px-2 py-1">Stok</button>
+                    <button onclick="showPage('mart')" class="px-2 py-1">Kasir</button>
+                    <button onclick="showPage('sewa')" class="px-2 py-1">Sewa</button>
+                    <button onclick="showPage('biaya')" class="px-2 py-1 text-red-600">Pengeluaran</button>
                     <button onclick="showPage('laporan')" class="bg-green-700 text-white px-3 py-1 rounded">Laporan</button>
                 </div>
             </div>
@@ -61,33 +52,31 @@
         <div class="container mx-auto p-4">
             <div id="dashboard" class="page">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
-                    <div class="bg-white p-6 rounded-xl shadow border-b-4 border-green-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Omzet Mart</p>
-                        <h3 id="stat-mart" class="text-xl font-black">Rp 0</h3>
+                    <div class="bg-white p-4 rounded-xl shadow border-b-4 border-green-500">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Omzet Masuk</p>
+                        <h3 id="stat-omzet" class="text-lg font-black text-green-700">Rp 0</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow border-b-4 border-blue-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Total Sewa</p>
-                        <h3 id="stat-sewa" class="text-xl font-black">Rp 0</h3>
+                    <div class="bg-white p-4 rounded-xl shadow border-b-4 border-red-500">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Total Pengeluaran</p>
+                        <h3 id="stat-biaya" class="text-lg font-black text-red-600">Rp 0</h3>
                     </div>
-                    <div class="bg-indigo-800 p-6 rounded-xl shadow text-white">
-                        <p class="text-xs font-bold uppercase">Laba Bersih</p>
-                        <h3 id="stat-profit" class="text-xl font-black text-yellow-400">Rp 0</h3>
+                    <div class="bg-indigo-800 p-4 rounded-xl shadow text-white border-b-4 border-yellow-500">
+                        <p class="text-[10px] font-bold uppercase">Laba Bersih Akhir</p>
+                        <h3 id="stat-profit" class="text-lg font-black text-yellow-400">Rp 0</h3>
                     </div>
                 </div>
-                <div class="bg-white p-4 rounded shadow h-64">
-                    <canvas id="incomeChart"></canvas>
-                </div>
+                <div class="bg-white p-4 rounded shadow h-64"><canvas id="incomeChart"></canvas></div>
                 <div class="mt-4 text-center no-print">
-                    <button onclick="kirimLaporanWA()" class="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-green-700">KIRIM REKAP KE WHATSAPP</button>
+                    <button onclick="kirimLaporanWA()" class="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow text-xs">REKAP WA</button>
                 </div>
             </div>
 
             <div id="kelola-barang" class="page hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded shadow no-print">
-                        <h3 id="form-title" class="font-bold mb-4 uppercase text-green-800 border-b pb-2">Input Barang</h3>
+                    <div class="bg-white p-6 rounded shadow">
+                        <h3 class="font-bold mb-4 uppercase text-green-800 border-b pb-2 text-sm">Update Stok</h3>
                         <input type="hidden" id="edit-id">
-                        <div class="space-y-3">
+                        <div class="space-y-3 text-sm">
                             <input type="text" id="inv-nama" placeholder="Nama Barang" class="w-full p-2 border rounded font-bold">
                             <div class="flex gap-2">
                                 <input type="number" id="inv-beli" placeholder="Modal" oninput="calcHargaJual()" class="w-1/2 p-2 border rounded font-bold">
@@ -95,17 +84,14 @@
                             </div>
                             <div class="p-2 bg-green-50 text-center rounded border border-green-200">
                                 <p class="text-[10px] font-bold">HARGA JUAL:</p>
-                                <p id="inv-jual-label" class="text-xl font-black text-green-700">Rp 0</p>
+                                <p id="inv-jual-label" class="text-lg font-black text-green-700">Rp 0</p>
                             </div>
-                            <input type="number" id="inv-stok" placeholder="Stok" class="w-full p-2 border rounded font-bold">
-                            <div class="flex gap-2">
-                                <button onclick="saveInventory()" id="btn-save" class="w-full bg-green-700 text-white py-2 rounded font-bold uppercase shadow">Simpan</button>
-                                <button onclick="clearForm()" id="btn-cancel" class="hidden bg-gray-400 text-white px-4 py-2 rounded font-bold">Batal</button>
-                            </div>
+                            <input type="number" id="inv-stok" placeholder="Jumlah Stok" class="w-full p-2 border rounded font-bold">
+                            <button onclick="saveInventory()" id="btn-save" class="w-full bg-green-700 text-white py-2 rounded font-bold uppercase shadow">Simpan Barang</button>
                         </div>
                     </div>
                     <div class="lg:col-span-2 bg-white p-4 rounded shadow overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-[10px] md:text-xs">
                             <thead class="bg-gray-50 border-b font-bold">
                                 <tr><th class="p-2 text-left">Barang</th><th class="p-2 text-right">Modal</th><th class="p-2 text-right">Jual</th><th class="p-2 text-center">Stok</th><th class="p-2 text-center">Aksi</th></tr>
                             </thead>
@@ -116,29 +102,29 @@
             </div>
 
             <div id="mart" class="page hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-bold text-sm">
                     <div class="bg-white p-6 rounded shadow no-print">
-                        <h3 class="font-bold mb-4 uppercase">Kasir Penjualan</h3>
-                        <select id="pos-select" class="w-full p-3 border rounded mb-4 font-bold"></select>
-                        <input type="number" id="pos-qty" value="1" class="w-full p-3 border rounded mb-4 font-bold">
-                        <button onclick="addToCart()" class="w-full bg-green-700 text-white py-3 rounded font-bold shadow hover:bg-green-800">Tambah Keranjang</button>
+                        <h3 class="mb-4 uppercase text-green-800">Kasir Mart</h3>
+                        <select id="pos-select" class="w-full p-3 border rounded mb-4"></select>
+                        <input type="number" id="pos-qty" value="1" class="w-full p-3 border rounded mb-4">
+                        <button onclick="addToCart()" class="w-full bg-green-700 text-white py-3 rounded font-bold shadow">TAMBAH</button>
                     </div>
                     <div id="printable-invoice-area" class="bg-white p-6 rounded shadow border mx-auto w-full max-w-sm">
                         <div class="text-center border-b border-dashed pb-3 mb-3">
                             <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-12 mx-auto mb-1">
-                            <h2 class="font-bold text-sm uppercase leading-none">BUMDES MART CMMSC</h2>
+                            <h2 class="font-bold text-sm uppercase">BUMDES MART CMMSC</h2>
                             <p class="text-[8px]">Cikahuripan, Klapanunggal, Bogor</p>
                         </div>
                         <div id="cart-list" class="space-y-1 mb-4 text-[10px] font-mono italic"></div>
                         <div class="flex justify-between items-center border-t border-dashed pt-2">
-                            <span class="text-[10px] font-bold uppercase">Total Bayar</span>
+                            <span class="text-[10px] font-bold uppercase">Total Belanja</span>
                             <h3 id="cart-total" class="text-xl font-black text-green-900">Rp 0</h3>
                         </div>
                         <div class="mt-6 no-print space-y-2">
-                            <select id="pos-method" class="w-full p-2 border rounded text-xs font-bold bg-gray-50">
+                            <select id="pos-method" class="w-full p-2 border rounded text-xs bg-gray-50">
                                 <option>TUNAI</option><option>TF MANDIRI</option><option>TF DANA</option>
                             </select>
-                            <button onclick="processPrintNota()" class="w-full bg-indigo-900 text-white py-3 rounded font-bold shadow-lg hover:scale-105 transition">BAYAR & SYNC CLOUD</button>
+                            <button onclick="processPrintNota()" class="w-full bg-indigo-900 text-white py-3 rounded font-bold shadow-lg">BAYAR & SYNC</button>
                         </div>
                     </div>
                 </div>
@@ -146,44 +132,48 @@
 
             <div id="sewa" class="page hidden">
                 <div class="max-w-md mx-auto bg-white p-8 rounded shadow-lg border-t-4 border-blue-600">
-                    <h2 class="font-bold mb-6 text-center uppercase">Transaksi Jasa & Sewa</h2>
+                    <h2 class="font-bold mb-6 text-center uppercase text-sm">Input Sewa / Jasa</h2>
                     <div class="space-y-4">
-                        <select id="sewa-unit" class="w-full p-3 border rounded font-bold">
+                        <select id="sewa-unit" class="w-full p-3 border rounded font-bold text-sm">
                             <option value="600000|Kios A">Kios A - Rp 600.000</option>
                             <option value="500000|Kios B">Kios B - Rp 500.000</option>
                             <option value="300000|Lapak">Lapak Pasar - Rp 300.000</option>
                             <option value="300000|Bola">Booking Lapangan - Rp 300.000</option>
                         </select>
-                        <input type="text" id="sewa-nama" placeholder="Nama Penyewa / Tim" class="w-full p-3 border rounded font-bold">
-                        <button onclick="processSewa()" class="w-full bg-blue-700 text-white py-4 rounded font-bold shadow hover:bg-blue-800">SIMPAN & SYNC CLOUD</button>
+                        <input type="text" id="sewa-nama" placeholder="Nama Penyewa" class="w-full p-3 border rounded font-bold text-sm">
+                        <button onclick="processSewa()" class="w-full bg-blue-700 text-white py-4 rounded font-bold shadow">SIMPAN & SYNC</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="biaya" class="page hidden">
+                <div class="max-w-md mx-auto bg-white p-8 rounded shadow-lg border-t-4 border-red-600">
+                    <h2 class="font-bold mb-6 text-center uppercase text-sm text-red-600">Input Pengeluaran / Biaya</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="exp-desc" placeholder="Keterangan (Contoh: Bayar Listrik)" class="w-full p-3 border rounded font-bold text-sm">
+                        <input type="number" id="exp-amount" placeholder="Jumlah Nominal (Rp)" class="w-full p-3 border rounded font-bold text-sm">
+                        <button onclick="processExpense()" class="w-full bg-red-600 text-white py-4 rounded font-bold shadow uppercase">Simpan Biaya</button>
                     </div>
                 </div>
             </div>
 
             <div id="laporan" class="page hidden">
                 <div class="no-print mb-4 flex justify-between items-center">
-                    <p class="text-xs text-gray-500 italic">Data tersinkron otomatis ke Google Sheets</p>
-                    <button onclick="processPrintLaporan()" class="bg-indigo-700 text-white px-6 py-2 rounded font-bold shadow">PRINT LAPORAN (PDF)</button>
+                    <button onclick="processPrintLaporan()" class="bg-indigo-700 text-white px-6 py-2 rounded font-bold shadow text-xs uppercase">Cetak Laporan</button>
                 </div>
-                <div id="printable-report-area" class="bg-white p-8 rounded shadow border">
+                <div id="printable-report-area" class="bg-white p-6 rounded shadow border">
                     <div class="flex justify-between border-b-4 border-double border-black pb-4 mb-4">
-                        <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-16">
+                        <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-14">
                         <div class="text-center">
-                            <h1 class="text-lg font-black uppercase">Badan Usaha Milik Desa</h1>
-                            <h2 class="text-xl font-black text-green-800">CIKAHURIPAN MAKMUR MANDIRI</h2>
-                            <p class="text-[9px] font-bold">Kec. Klapanunggal, Kab. Bogor - Jawa Barat</p>
+                            <h1 class="text-sm font-black uppercase">Badan Usaha Milik Desa</h1>
+                            <h2 class="text-lg font-black text-green-800 leading-none">CIKAHURIPAN MAKMUR MANDIRI</h2>
+                            <p class="text-[8px] font-bold">Kec. Klapanunggal, Kab. Bogor</p>
                         </div>
-                        <div class="w-16"></div>
+                        <div class="w-14"></div>
                     </div>
-                    <table class="w-full text-[10px] border-collapse border border-black">
+                    <table class="w-full text-[9px] border-collapse border border-black">
                         <thead class="bg-gray-100 uppercase font-bold">
-                            <tr>
-                                <th class="border border-black p-1">Waktu</th>
-                                <th class="border border-black p-1">Unit</th>
-                                <th class="border border-black p-1 text-left">Keterangan</th>
-                                <th class="border border-black p-1 text-right">Laba</th>
-                                <th class="border border-black p-1 text-right">Omzet</th>
-                            </tr>
+                            <tr><th class="border border-black p-1">Waktu</th><th class="border border-black p-1">Unit</th><th class="border border-black p-1 text-left">Keterangan</th><th class="border border-black p-1 text-right">Laba/Beban</th><th class="border border-black p-1 text-right">Omzet</th></tr>
                         </thead>
                         <tbody id="report-table" class="font-bold"></tbody>
                     </table>
@@ -193,19 +183,17 @@
     </div>
 
     <script>
-        // URL GOOGLE SCRIPT BAPAK
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbykj1fE0wTD3WF8koV1mq1-0bzXmiifedeVrX-2FS_fYZ534JhaFMdtRAdp_BC2DpE1Dw/exec";
-        
-        let items = JSON.parse(localStorage.getItem('cmmsc_v7_items')) || [];
-        let transactions = JSON.parse(localStorage.getItem('cmmsc_v7_trans')) || [];
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxX6jiVHcf_HX5xScgmtqGejRQTMfwYeteuJJR8DxLoavqWycLDZn3cN9OLjjEGmI0IVg/exec";
+        let items = JSON.parse(localStorage.getItem('cmmsc_v8_items')) || [];
+        let transactions = JSON.parse(localStorage.getItem('cmmsc_v8_trans')) || [];
         let cart = [];
 
         function checkLogin() {
             if(document.getElementById('admin-pass').value === "admin123") {
-                document.getElementById('login-page').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
                 updateDashboard();
-            } else { alert("Password Salah!"); }
+            } else { alert("Akses Ditolak!"); }
         }
 
         function showPage(id) {
@@ -217,7 +205,6 @@
             if(id === 'dashboard') updateDashboard();
         }
 
-        // --- STOK & INVENTORI ---
         function calcHargaJual() {
             const beli = parseInt(document.getElementById('inv-beli').value) || 0;
             const margin = parseInt(document.getElementById('inv-margin').value) || 0;
@@ -232,161 +219,118 @@
             const beli = parseInt(document.getElementById('inv-beli').value);
             const jual = calcHargaJual();
             const stok = parseInt(document.getElementById('inv-stok').value);
-
-            if(!nama || isNaN(beli)) return alert("Data harus lengkap!");
-
-            if(id) {
-                const idx = items.findIndex(i => i.id == id);
-                items[idx] = { id: parseInt(id), nama, beli, jual, stok };
-                alert("Data diperbarui!");
-            } else {
-                items.push({ id: Date.now(), nama, beli, jual, stok });
-                alert("Data disimpan!");
-            }
-
-            localStorage.setItem('cmmsc_v7_items', JSON.stringify(items));
-            clearForm();
-            renderInventory();
+            if(!nama || isNaN(beli)) return alert("Data tidak valid!");
+            if(id) items[items.findIndex(i => i.id == id)] = { id: parseInt(id), nama, beli, jual, stok };
+            else items.push({ id: Date.now(), nama, beli, jual, stok });
+            localStorage.setItem('cmmsc_v8_items', JSON.stringify(items));
+            clearForm(); renderInventory();
         }
 
         function clearForm() {
-            document.getElementById('edit-id').value = "";
-            document.getElementById('inv-nama').value = "";
-            document.getElementById('inv-beli').value = "";
-            document.getElementById('inv-margin').value = "";
-            document.getElementById('inv-stok').value = "";
-            document.getElementById('inv-jual-label').innerText = "Rp 0";
-            document.getElementById('form-title').innerText = "Input Barang";
-            document.getElementById('btn-save').innerText = "Simpan";
-            document.getElementById('btn-cancel').classList.add('hidden');
-        }
-
-        function editItem(id) {
-            const item = items.find(i => i.id == id);
-            document.getElementById('edit-id').value = item.id;
-            document.getElementById('inv-nama').value = item.nama;
-            document.getElementById('inv-beli').value = item.beli;
-            document.getElementById('inv-margin').value = Math.round(((item.jual - item.beli) / item.beli) * 100);
-            document.getElementById('inv-stok').value = item.stok;
-            document.getElementById('form-title').innerText = "Edit Barang";
-            document.getElementById('btn-save').innerText = "Update";
-            document.getElementById('btn-cancel').classList.remove('hidden');
-            calcHargaJual();
+            document.getElementById('edit-id').value = ""; document.getElementById('inv-nama').value = "";
+            document.getElementById('inv-beli').value = ""; document.getElementById('inv-margin').value = "";
+            document.getElementById('inv-stok').value = ""; document.getElementById('inv-jual-label').innerText = "Rp 0";
         }
 
         function renderInventory() {
             document.getElementById('inventory-table').innerHTML = items.map(i => `
-                <tr class="border-b uppercase font-bold text-xs hover:bg-gray-50">
-                    <td class="p-2">${i.nama}</td>
-                    <td class="p-2 text-right">Rp ${i.beli.toLocaleString()}</td>
-                    <td class="p-2 text-right text-green-700">Rp ${i.jual.toLocaleString()}</td>
-                    <td class="p-2 text-center">${i.stok}</td>
-                    <td class="p-2 text-center space-x-2">
-                        <button onclick="editItem(${i.id})" class="text-blue-600">Edit</button>
-                        <button onclick="deleteItem(${i.id})" class="text-red-500">Hapus</button>
-                    </td>
+                <tr class="border-b uppercase font-bold hover:bg-gray-50">
+                    <td class="p-2">${i.nama}</td><td class="p-2 text-right">Rp ${i.beli.toLocaleString()}</td>
+                    <td class="p-2 text-right text-green-700">Rp ${i.jual.toLocaleString()}</td><td class="p-2 text-center">${i.stok}</td>
+                    <td class="p-2 text-center"><button onclick="editItem(${i.id})" class="text-blue-600 px-2">Edit</button></td>
                 </tr>
             `).join('');
         }
 
-        function deleteItem(id) {
-            if(confirm("Hapus barang?")) {
-                items = items.filter(i => i.id != id);
-                localStorage.setItem('cmmsc_v7_items', JSON.stringify(items));
-                renderInventory();
-            }
+        function editItem(id) {
+            const i = items.find(it => it.id == id);
+            document.getElementById('edit-id').value = i.id; document.getElementById('inv-nama').value = i.nama;
+            document.getElementById('inv-beli').value = i.beli; document.getElementById('inv-stok').value = i.stok;
+            calcHargaJual();
         }
 
-        // --- KASIR & CLOUD SYNC ---
         function renderPOSOptions() {
-            document.getElementById('pos-select').innerHTML = items.map(i => `<option value="${i.id}">${i.nama} - Rp ${i.jual.toLocaleString()} (Stok: ${i.stok})</option>`).join('');
+            document.getElementById('pos-select').innerHTML = items.map(i => `<option value="${i.id}">${i.nama} (Rp ${i.jual.toLocaleString()})</option>`).join('');
         }
 
         function addToCart() {
             const id = document.getElementById('pos-select').value;
             const qty = parseInt(document.getElementById('pos-qty').value);
             const item = items.find(it => it.id == id);
-            if(item.stok < qty) return alert("Stok tidak mencukupi!");
-            cart.push({ ...item, qty });
-            renderCart();
+            if(item.stok < qty) return alert("Stok kurang!");
+            cart.push({ ...item, qty }); renderCart();
         }
 
         function renderCart() {
             let tot = 0;
             document.getElementById('cart-list').innerHTML = cart.map(c => {
                 tot += (c.jual * c.qty);
-                return `<div class="flex justify-between border-b border-dotted"><span>${c.nama} (x${c.qty})</span><span>${(c.jual*c.qty).toLocaleString()}</span></div>`;
+                return `<div class="flex justify-between"><span>${c.nama} (x${c.qty})</span><span>${(c.jual*c.qty).toLocaleString()}</span></div>`;
             }).join('');
             document.getElementById('cart-total').innerText = "Rp " + tot.toLocaleString();
         }
 
         async function sendToCloud(data) {
-            try {
-                await fetch(CLOUD_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(data)
-                });
-            } catch (e) { console.error("Cloud Sync Error", e); }
+            try { await fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }); } 
+            catch (e) { console.error(e); }
         }
 
         function processPrintNota() {
-            if(cart.length === 0) return alert("Keranjang Kosong!");
+            if(cart.length === 0) return;
             let omzet = 0, profit = 0;
             cart.forEach(c => {
-                omzet += (c.jual * c.qty);
-                profit += ((c.jual - c.beli) * c.qty);
+                omzet += (c.jual * c.qty); profit += ((c.jual - c.beli) * c.qty);
                 items.find(it => it.id == c.id).stok -= c.qty;
             });
-
-            const payload = { 
-                tgl: new Date().toLocaleString('id-ID'), unit: "MART", 
-                desc: `Penjualan Mart (${cart.length} item)`, 
-                method: document.getElementById('pos-method').value, 
-                profit: profit, omzet: omzet 
-            };
-
+            const payload = { tgl: new Date().toLocaleString('id-ID'), unit: "MART", desc: `Nota Mart (${cart.length} item)`, method: document.getElementById('pos-method').value, profit, omzet };
             transactions.push(payload);
-            localStorage.setItem('cmmsc_v7_trans', JSON.stringify(transactions));
-            localStorage.setItem('cmmsc_v7_items', JSON.stringify(items));
-            
-            sendToCloud(payload); // Kirim ke Google Sheets
-
+            localStorage.setItem('cmmsc_v8_trans', JSON.stringify(transactions));
+            localStorage.setItem('cmmsc_v8_items', JSON.stringify(items));
+            sendToCloud(payload);
             const area = document.getElementById('printable-invoice-area');
             area.classList.add('active-print');
-            setTimeout(() => { 
-                window.print(); 
-                area.classList.remove('active-print'); 
-                cart = []; renderCart(); showPage('dashboard');
-            }, 500);
+            setTimeout(() => { window.print(); area.classList.remove('active-print'); cart = []; renderCart(); showPage('dashboard'); }, 500);
         }
 
         function processSewa() {
             const val = document.getElementById('sewa-unit').value.split('|');
             const nama = document.getElementById('sewa-nama').value;
-            if(!nama) return alert("Isi Nama Penyewa!");
-
-            const payload = { 
-                tgl: new Date().toLocaleString('id-ID'), unit: "SEWA", 
-                desc: `${val[1]} - a/n ${nama}`, 
-                method: "TUNAI", profit: parseInt(val[0]), omzet: parseInt(val[0]) 
-            };
-
+            if(!nama) return alert("Isi nama!");
+            const payload = { tgl: new Date().toLocaleString('id-ID'), unit: "SEWA", desc: `${val[1]} - a/n ${nama}`, method: "TUNAI", profit: parseInt(val[0]), omzet: parseInt(val[0]) };
             transactions.push(payload);
-            localStorage.setItem('cmmsc_v7_trans', JSON.stringify(transactions));
-            sendToCloud(payload); // Kirim ke Google Sheets
+            localStorage.setItem('cmmsc_v8_trans', JSON.stringify(transactions));
+            sendToCloud(payload);
+            alert("Sinkron Berhasil!");
+            document.getElementById('sewa-nama').value = ""; showPage('dashboard');
+        }
 
-            alert("Transaksi Jasa Tersimpan & Sinkron Cloud!");
-            document.getElementById('sewa-nama').value = "";
+        function processExpense() {
+            const desc = document.getElementById('exp-desc').value;
+            const amount = parseInt(document.getElementById('exp-amount').value);
+            if(!desc || isNaN(amount)) return alert("Data pengeluaran tidak valid!");
+            
+            // Pengeluaran dicatat sebagai profit MINUS dan omzet NOL
+            const payload = { 
+                tgl: new Date().toLocaleString('id-ID'), unit: "BIAYA", 
+                desc: `PENGELUARAN: ${desc}`, method: "TUNAI", 
+                profit: -amount, omzet: 0 
+            };
+            
+            transactions.push(payload);
+            localStorage.setItem('cmmsc_v8_trans', JSON.stringify(transactions));
+            sendToCloud(payload);
+            alert("Pengeluaran Berhasil Dicatat!");
+            document.getElementById('exp-desc').value = "";
+            document.getElementById('exp-amount').value = "";
             showPage('dashboard');
         }
 
         function renderReport() {
             document.getElementById('report-table').innerHTML = transactions.slice().reverse().map(t => `
-                <tr class="border border-black">
+                <tr class="border border-black ${t.unit === 'BIAYA' ? 'text-red-600 bg-red-50' : ''}">
                     <td class="p-1 border border-black">${t.tgl}</td>
                     <td class="p-1 border border-black text-center">${t.unit}</td>
-                    <td class="p-1 border border-black uppercase text-[8px]">${t.desc}</td>
+                    <td class="p-1 border border-black uppercase text-[7px]">${t.desc}</td>
                     <td class="p-1 border border-black text-right">Rp ${t.profit.toLocaleString()}</td>
                     <td class="p-1 border border-black text-right font-black">Rp ${t.omzet.toLocaleString()}</td>
                 </tr>
@@ -399,48 +343,35 @@
             setTimeout(() => { window.print(); area.classList.remove('active-print'); }, 500);
         }
 
-        // --- DASHBOARD & WHATSAPP ---
         function updateDashboard() {
-            let m = 0, s = 0, p = 0;
+            let omzet = 0, biaya = 0, profit = 0;
             transactions.forEach(t => { 
-                if(t.unit === 'MART') m += t.omzet; 
-                if(t.unit === 'SEWA') s += t.omzet; 
-                p += t.profit; 
+                omzet += t.omzet; 
+                if(t.unit === "BIAYA") biaya += Math.abs(t.profit);
+                profit += t.profit; 
             });
-            document.getElementById('stat-mart').innerText = "Rp " + m.toLocaleString();
-            document.getElementById('stat-sewa').innerText = "Rp " + s.toLocaleString();
-            document.getElementById('stat-profit').innerText = "Rp " + p.toLocaleString();
+            document.getElementById('stat-omzet').innerText = "Rp " + omzet.toLocaleString();
+            document.getElementById('stat-biaya').innerText = "Rp " + biaya.toLocaleString();
+            document.getElementById('stat-profit').innerText = "Rp " + profit.toLocaleString();
             
             const ctx = document.getElementById('incomeChart').getContext('2d');
             if(window.ch) window.ch.destroy();
             window.ch = new Chart(ctx, {
-                type: 'bar',
+                type: 'doughnut',
                 data: {
-                    labels: ['UNIT MART', 'UNIT SEWA'],
-                    datasets: [{ label: 'Omzet', data: [m, s], backgroundColor: ['#10b981', '#1d4ed8'], borderRadius: 8 }]
+                    labels: ['Sisa Laba', 'Total Biaya'],
+                    datasets: [{ data: [profit > 0 ? profit : 0, biaya], backgroundColor: ['#10b981', '#ef4444'] }]
                 },
                 options: { maintainAspectRatio: false }
             });
         }
 
         function kirimLaporanWA() {
-            let m = 0, s = 0, p = 0;
-            transactions.forEach(t => { 
-                if(t.unit === 'MART') m += t.omzet; 
-                if(t.unit === 'SEWA') s += t.omzet; 
-                p += t.profit; 
-            });
-
-            const text = `*LAPORAN BUMDes CMMSC*%0A` +
-                         `_Update: ${new Date().toLocaleDateString('id-ID')}_%0A%0A` +
-                         `🛒 *Omzet Mart:* Rp ${m.toLocaleString()}%0A` +
-                         `🏢 *Omzet Sewa:* Rp ${s.toLocaleString()}%0A` +
-                         `💰 *Total Laba:* Rp ${p.toLocaleString()}%0A%0A` +
-                         `_Data sinkron dengan Cloud Google Sheets._`;
-            
+            let o = 0, b = 0, p = 0;
+            transactions.forEach(t => { o += t.omzet; if(t.unit==="BIAYA") b+=Math.abs(t.profit); p += t.profit; });
+            const text = `*LAPORAN CMMSC*%0A*Omzet:* Rp ${o.toLocaleString()}%0A*Biaya:* Rp ${b.toLocaleString()}%0A*Laba:* Rp ${p.toLocaleString()}`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
         }
     </script>
 </body>
 </html>
-
