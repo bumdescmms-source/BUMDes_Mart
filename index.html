@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem BUMDes CMMSC - Official Perbaikan Print</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS KHUSUS TAMPILAN CETAK - DIPERKUAT */
+        @media print {
+            /* Sembunyikan semua kecuali area yang ditandai active-print */
+            body * {
+                visibility: hidden !important;
+            }
+            #printable-invoice-area.active-print, 
+            #printable-invoice-area.active-print *,
+            #printable-report-area.active-print,
+            #printable-report-area.active-print * {
+                visibility: visible !important;
+            }
+            
+            /* Posisikan area cetak di paling atas kertas */
+            #printable-invoice-area.active-print, 
+            #printable-report-area.active-print {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                display: block !important;
+            }
+
+            /* Hilangkan dekorasi browser (header/footer tanggal/url) */
+            @page {
+                margin: 0.5cm;
+            }
+            
+            .no-print { display: none !important; }
+        }
+
+        .page { transition: opacity 0.2s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div id="login-page" class="fixed inset-0 bg-green-900 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border-t-8 border-yellow-500">
+            <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="mx-auto w-32 mb-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Admin CMMSC</h2>
+            <input type="password" id="admin-pass" placeholder="Password Admin" class="w-full p-3 border rounded-lg mb-4 text-center outline-none">
+            <button onclick="checkLogin()" class="w-full bg-green-700 text-white py-3 rounded-lg font-bold shadow-lg">MASUK</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <nav class="bg-white border-b shadow-md p-4 sticky top-0 z-50 no-print">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-10 h-10">
+                    <h1 class="font-bold text-green-800">CMMSC</h1>
+                </div>
+                <div class="flex gap-4 text-xs font-black uppercase">
+                    <button onclick="showPage('dashboard')">Dashboard</button>
+                    <button onclick="showPage('kelola-barang')">Stok</button>
+                    <button onclick="showPage('mart')">Kasir</button>
+                    <button onclick="showPage('sewa')">Sewa</button>
+                    <button onclick="showPage('laporan')" class="bg-green-700 text-white px-3 py-1 rounded">Laporan</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mx-auto p-4">
+            <div id="dashboard" class="page">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Omzet Mart</p>
+                        <h3 id="stat-mart" class="text-xl font-black">Rp 0</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Total Jasa/Sewa</p>
+                        <h3 id="stat-sewa" class="text-xl font-black">Rp 0</h3>
+                    </div>
+                    <div class="bg-indigo-800 p-6 rounded-xl shadow text-white">
+                        <p class="text-xs font-bold uppercase">Total Laba Bersih</p>
+                        <h3 id="stat-profit" class="text-xl font-black">Rp 0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded shadow h-64">
+                    <canvas id="incomeChart"></canvas>
+                </div>
+            </div>
+
+            <div id="kelola-barang" class="page hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded shadow no-print">
+                        <h3 id="form-title" class="font-bold mb-4 uppercase text-green-800">Input Barang</h3>
+                        <input type="hidden" id="edit-id">
+                        <div class="space-y-3">
+                            <input type="text" id="inv-nama" placeholder="Nama Barang" class="w-full p-2 border rounded">
+                            <div class="flex gap-2">
+                                <input type="number" id="inv-beli" placeholder="Modal" oninput="calcHargaJual()" class="w-1/2 p-2 border rounded">
+                                <input type="number" id="inv-margin" placeholder="Laba %" oninput="calcHargaJual()" class="w-1/2 p-2 border rounded">
+                            </div>
+                            <div class="p-2 bg-green-50 text-center rounded border border-green-200">
+                                <p class="text-[10px] font-bold">HARGA JUAL:</p>
+                                <p id="inv-jual-label" class="text-xl font-black">Rp 0</p>
+                            </div>
+                            <input type="number" id="inv-stok" placeholder="Stok" class="w-full p-2 border rounded">
+                            <div class="flex gap-2">
+                                <button onclick="saveInventory()" id="btn-save" class="w-full bg-green-700 text-white py-2 rounded font-bold">SIMPAN</button>
+                                <button onclick="clearForm()" id="btn-cancel" class="hidden bg-gray-400 text-white px-4 py-2 rounded">BATAL</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-4 rounded shadow overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 border-b">
+                                <tr class="text-left font-bold">
+                                    <th class="p-2">Barang</th>
+                                    <th class="p-2 text-right">Modal</th>
+                                    <th class="p-2 text-right">Jual</th>
+                                    <th class="p-2 text-center">Stok</th>
+                                    <th class="p-2 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mart" class="page hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded shadow no-print">
+                        <h3 class="font-bold mb-4 uppercase">Keranjang Kasir</h3>
+                        <select id="pos-select" class="w-full p-3 border rounded mb-4"></select>
+                        <input type="number" id="pos-qty" value="1" class="w-full p-3 border rounded mb-4">
+                        <button onclick="addToCart()" class="w-full bg-green-700 text-white py-3 rounded font-bold">TAMBAH</button>
+                    </div>
+
+                    <div id="printable-invoice-area" class="bg-white p-6 rounded shadow border mx-auto w-full max-w-sm">
+                        <div class="text-center border-b border-dashed pb-3 mb-3">
+                            <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-12 mx-auto mb-1">
+                            <h2 class="font-bold text-sm uppercase">BUMDES MART CMMSC</h2>
+                            <p class="text-[8px] uppercase">Cikahuripan, Klapanunggal, Bogor</p>
+                        </div>
+                        <div id="cart-list" class="space-y-1 mb-4 text-[10px] font-mono italic border-b border-dashed pb-2"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold">TOTAL BAYAR</span>
+                            <h3 id="cart-total" class="text-xl font-black">Rp 0</h3>
+                        </div>
+                        <div class="mt-6 no-print space-y-2">
+                            <select id="pos-method" class="w-full p-2 border rounded text-xs bg-gray-50 font-bold">
+                                <option>TUNAI</option>
+                                <option>TF MANDIRI</option>
+                                <option>TF DANA</option>
+                            </select>
+                            <button onclick="processPrintNota()" class="w-full bg-indigo-900 text-white py-3 rounded font-bold shadow-lg">BAYAR & PRINT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sewa" class="page hidden">
+                <div class="max-w-md mx-auto bg-white p-8 rounded shadow-lg border-t-4 border-blue-600">
+                    <h2 class="font-bold mb-6 text-center uppercase">Transaksi Jasa & Sewa</h2>
+                    <div class="space-y-4">
+                        <select id="sewa-unit" class="w-full p-3 border rounded font-bold">
+                            <option value="600000|Kios A">Kios A - Rp 600rb</option>
+                            <option value="500000|Kios B">Kios B - Rp 500rb</option>
+                            <option value="300000|Lapak">Lapak - Rp 300rb</option>
+                            <option value="300000|Bola">Bola - Rp 300rb</option>
+                        </select>
+                        <input type="text" id="sewa-nama" placeholder="Nama Penyewa" class="w-full p-3 border rounded font-bold">
+                        <button onclick="processSewa()" class="w-full bg-blue-700 text-white py-3 rounded font-bold shadow">SIMPAN TRANSAKSI</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="laporan" class="page hidden">
+                <div class="no-print mb-4 text-right">
+                    <button onclick="processPrintLaporan()" class="bg-indigo-700 text-white px-6 py-2 rounded font-bold shadow-lg">PRINT LAPORAN (PDF)</button>
+                </div>
+                
+                <div id="printable-report-area" class="bg-white p-8 rounded shadow border">
+                    <div class="flex justify-between items-center border-b-4 border-double border-black pb-4 mb-6">
+                        <img src="https://i.ibb.co/Xf8m69R/logo-bumdes.png" class="w-16">
+                        <div class="text-center">
+                            <h1 class="text-lg font-black uppercase leading-tight">Badan Usaha Milik Desa</h1>
+                            <h2 class="text-xl font-black text-green-800">CIKAHURIPAN MAKMUR MANDIRI</h2>
+                            <p class="text-[9px] font-bold uppercase">Kec. Klapanunggal, Kab. Bogor - Jawa Barat</p>
+                        </div>
+                        <div class="w-16"></div>
+                    </div>
+                    <table class="w-full text-[10px] border-collapse border border-black">
+                        <thead class="bg-gray-100 uppercase">
+                            <tr>
+                                <th class="border border-black p-1">Waktu</th>
+                                <th class="border border-black p-1">Unit</th>
+                                <th class="border border-black p-1 text-left">Keterangan</th>
+                                <th class="border border-black p-1 text-right">Laba</th>
+                                <th class="border border-black p-1 text-right">Omzet</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table" class="font-bold"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = JSON.parse(localStorage.getItem('cmmsc_v6_items')) || [];
+        let transactions = JSON.parse(localStorage.getItem('cmmsc_v6_trans')) || [];
+        let cart = [];
+
+        function checkLogin() {
+            if(document.getElementById('admin-pass').value === "admin123") {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                updateDashboard();
+            }
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'kelola-barang') renderInventory();
+            if(id === 'mart') renderPOSOptions();
+            if(id === 'laporan') renderReport();
+            if(id === 'dashboard') updateDashboard();
+        }
+
+        // --- INVENTORY ---
+        function calcHargaJual() {
+            const beli = parseInt(document.getElementById('inv-beli').value) || 0;
+            const margin = parseInt(document.getElementById('inv-margin').value) || 0;
+            const jual = Math.round(beli + (beli * (margin/100)));
+            document.getElementById('inv-jual-label').innerText = "Rp " + jual.toLocaleString();
+            return jual;
+        }
+
+        function saveInventory() {
+            const id = document.getElementById('edit-id').value;
+            const nama = document.getElementById('inv-nama').value;
+            const beli = parseInt(document.getElementById('inv-beli').value);
+            const jual = calcHargaJual();
+            const stok = parseInt(document.getElementById('inv-stok').value);
+
+            if(!nama || isNaN(beli)) return alert("Data tidak lengkap!");
+
+            if(id) {
+                const idx = items.findIndex(i => i.id == id);
+                items[idx] = { id: parseInt(id), nama, beli, jual, stok };
+            } else {
+                items.push({ id: Date.now(), nama, beli, jual, stok });
+            }
+
+            localStorage.setItem('cmmsc_v6_items', JSON.stringify(items));
+            clearForm();
+            renderInventory();
+        }
+
+        function clearForm() {
+            document.getElementById('edit-id').value = "";
+            document.getElementById('inv-nama').value = "";
+            document.getElementById('inv-beli').value = "";
+            document.getElementById('inv-margin').value = "";
+            document.getElementById('inv-stok').value = "";
+            document.getElementById('inv-jual-label').innerText = "Rp 0";
+            document.getElementById('btn-save').innerText = "SIMPAN";
+            document.getElementById('btn-cancel').classList.add('hidden');
+        }
+
+        function editItem(id) {
+            const item = items.find(i => i.id == id);
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('inv-nama').value = item.nama;
+            document.getElementById('inv-beli').value = item.beli;
+            document.getElementById('inv-margin').value = Math.round(((item.jual - item.beli) / item.beli) * 100);
+            document.getElementById('inv-stok').value = item.stok;
+            document.getElementById('btn-save').innerText = "UPDATE";
+            document.getElementById('btn-cancel').classList.remove('hidden');
+            calcHargaJual();
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table');
+            tbody.innerHTML = items.map(i => `
+                <tr class="border-b text-xs uppercase font-bold">
+                    <td class="p-2">${i.nama}</td>
+                    <td class="p-2 text-right">Rp ${i.beli.toLocaleString()}</td>
+                    <td class="p-2 text-right text-green-700">Rp ${i.jual.toLocaleString()}</td>
+                    <td class="p-2 text-center">${i.stok}</td>
+                    <td class="p-2 text-center space-x-2">
+                        <button onclick="editItem(${i.id})" class="text-blue-600">Edit</button>
+                        <button onclick="deleteItem(${i.id})" class="text-red-500">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteItem(id) {
+            if(confirm("Hapus barang?")) {
+                items = items.filter(i => i.id != id);
+                localStorage.setItem('cmmsc_v6_items', JSON.stringify(items));
+                renderInventory();
+            }
+        }
+
+        // --- MART & PRINT NOTA ---
+        function renderPOSOptions() {
+            const select = document.getElementById('pos-select');
+            select.innerHTML = items.map(i => `<option value="${i.id}">${i.nama} - Rp ${i.jual.toLocaleString()}</option>`).join('');
+        }
+
+        function addToCart() {
+            const id = document.getElementById('pos-select').value;
+            const qty = parseInt(document.getElementById('pos-qty').value);
+            const item = items.find(i => i.id == id);
+            if(item.stok < qty) return alert("Stok kurang!");
+            cart.push({ ...item, qty });
+            renderCart();
+        }
+
+        function renderCart() {
+            let tot = 0;
+            document.getElementById('cart-list').innerHTML = cart.map(c => {
+                tot += (c.jual * c.qty);
+                return `<div class="flex justify-between"><span>${c.nama} (x${c.qty})</span><span>${(c.jual*c.qty).toLocaleString()}</span></div>`;
+            }).join('');
+            document.getElementById('cart-total').innerText = "Rp " + tot.toLocaleString();
+        }
+
+        function processPrintNota() {
+            if(cart.length === 0) return alert("Kosong!");
+            
+            let omzet = 0, profit = 0;
+            cart.forEach(c => {
+                omzet += (c.jual * c.qty);
+                profit += ((c.jual - c.beli) * c.qty);
+                items.find(it => it.id == c.id).stok -= c.qty;
+            });
+
+            recordTrans("MART", `Nota ${cart.length} item`, omzet, profit, document.getElementById('pos-method').value);
+            localStorage.setItem('cmmsc_v6_items', JSON.stringify(items));
+
+            const area = document.getElementById('printable-invoice-area');
+            area.classList.add('active-print');
+
+            // Jeda 500ms agar browser merender tampilan nota sebelum diprint
+            setTimeout(() => {
+                window.print();
+                area.classList.remove('active-print');
+                cart = [];
+                renderCart();
+                showPage('dashboard');
+            }, 500);
+        }
+
+        // --- LAPORAN & PRINT ---
+        function recordTrans(unit, desc, omzet, profit, method) {
+            transactions.push({ tgl: new Date().toLocaleString('id-ID'), unit, desc, omzet, profit, method });
+            localStorage.setItem('cmmsc_v6_trans', JSON.stringify(transactions));
+        }
+
+        function renderReport() {
+            document.getElementById('report-table').innerHTML = transactions.slice().reverse().map(t => `
+                <tr class="border border-black">
+                    <td class="p-1 border border-black">${t.tgl}</td>
+                    <td class="p-1 border border-black text-center">${t.unit}</td>
+                    <td class="p-1 border border-black uppercase">${t.desc}</td>
+                    <td class="p-1 border border-black text-right">Rp ${t.profit.toLocaleString()}</td>
+                    <td class="p-1 border border-black text-right font-black">Rp ${t.omzet.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        function processPrintLaporan() {
+            const area = document.getElementById('printable-report-area');
+            area.classList.add('active-print');
+            setTimeout(() => {
+                window.print();
+                area.classList.remove('active-print');
+            }, 500);
+        }
+
+        function processSewa() {
+            const val = document.getElementById('sewa-unit').value.split('|');
+            const nama = document.getElementById('sewa-nama').value;
+            if(!nama) return alert("Isi Nama!");
+            recordTrans("SEWA", `${val[1]} - ${nama}`, parseInt(val[0]), parseInt(val[0]), "TUNAI");
+            alert("Berhasil!");
+            document.getElementById('sewa-nama').value = "";
+            showPage('dashboard');
+        }
+
+        // --- DASHBOARD ---
+        function updateDashboard() {
+            let m = 0, s = 0, p = 0;
+            transactions.forEach(t => {
+                if(t.unit === 'MART') m += t.omzet;
+                if(t.unit === 'SEWA') s += t.omzet;
+                p += t.profit;
+            });
+            document.getElementById('stat-mart').innerText = "Rp " + m.toLocaleString();
+            document.getElementById('stat-sewa').innerText = "Rp " + s.toLocaleString();
+            document.getElementById('stat-profit').innerText = "Rp " + p.toLocaleString();
+            renderChart(m, s);
+        }
+
+        let myChart;
+        function renderChart(m, s) {
+            const ctx = document.getElementById('incomeChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['MART', 'SEWA'],
+                    datasets: [{ label: 'Omzet', data: [m, s], backgroundColor: ['#10b981', '#1d4ed8'] }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+        }
+    </script>
+</body>
+</html>
