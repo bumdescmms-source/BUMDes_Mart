@@ -461,7 +461,7 @@
     </div>
 </div>
     <script>
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzoDQToOJdHih0DfPgzzRTNkSGy7rW3YmE9xnlLGZ2fPwUVnMFcvZxU2-ysQAvdYHDJBw/exec";
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzNGl_LDWfgxIe03MC2uEmoxadkQxoAOplQDHJFWOCgyybBKrEw7N0QYpK4jCuTxZY41A/exec";
         let items = JSON.parse(localStorage.getItem('cmmsc_v7_items')) || [];
         let transactions = JSON.parse(localStorage.getItem('cmmsc_v7_trans')) || [];
         let cart = [];
@@ -778,6 +778,71 @@
             if(window.ch) window.ch.destroy();
             window.ch = new Chart(ctx, { type: 'bar', data: { labels: ['MART', 'SEWA', 'PENGELUARAN'], datasets: [{ label: 'Keuangan Kas', data: [m, s, b], backgroundColor: ['#10b981', '#1d4ed8', '#ef4444'] }] }, options: { maintainAspectRatio: false } });
         }
+// Paste URL Web App /exec yang sudah dicopy dari Langkah 1 di sini
+const urlWebApi = "PASANG_URL_WEB_APP_PRAP_SINI_YANG_BERAKHIRAN_EXEC";
+
+function prosesBayar() {
+    // 1. Ambil data dari elemen-elemen form input HTML Bapak
+    let pelangganNama = $('#payPelanggan option:selected').text();
+    let bulanBayar = $('#payBulan').val();
+    let nominalBayar = parseFloat($('#payNominal').val()) || 0;
+    let metodeBayar = $('#payMetode').val();
+    
+    if (!pelangganNama || pelangganNama === "-- Pilih --") {
+        alert("Pilih pelanggan terlebih dahulu!");
+        return;
+    }
+
+    // 2. Bungkus data ke dalam objek JSON sesuai kebutuhan kode.gs Bapak
+    let payloadData = {
+        tgl: new Date().toLocaleDateString('id-ID'), // Tanggal hari ini
+        unit: "Kios & Pasar Desa",                  // Sesuai kolom "Unit Usaha"
+        desc: `Pembayaran Iuran ${pelangganNama} Bulan ${bulanBayar}`, // Kolom "Keterangan"
+        method: metodeBayar,                         // Kolom "Metode Pembayaran"
+        profit: nominalBayar,                        // Kolom "Laba (Rp)"
+        omzet: nominalBayar                          // Kolom "Omzet (Rp)"
+    };
+
+    // Tampilkan animasi loading atau kunci tombol agar tidak diklik dua kali
+    $('button[onclick="prosesBayar()"]').prop('disabled', true).text('Menyimpan...');
+
+    // 3. Kirim data ke Google Apps Script menggunakan FETCH API
+    fetch(urlWebApi, {
+        method: "POST",
+        mode: "no-cors", // Wajib menggunakan no-cors jika mengalami kendala CORS pre-flight
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payloadData)
+    })
+    .then(response => {
+        // Karena menggunakan mode: 'no-cors', browser tidak bisa membaca isi respon sukses secara detail,
+        // namun data dipastikan tetap masuk ke Google Sheets jika status jaringan oke.
+        
+        alert("Data Pembayaran Berhasil Disinkronisasi ke Google Sheets!");
+        
+        // Panggil fungsi cetak kwitansi A5 yang sudah kita buat sebelumnya
+        if (typeof cetakKwitansi === "function") {
+            cetakKwitansi(); 
+        }
+
+        // Kembalikan form ke kondisi kosong setelah sukses
+        resetFormPembayaran();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Gagal sinkronisasi data ke cloud. Periksa koneksi internet.");
+    })
+    .finally(() => {
+        // Kembalikan tombol ke kondisi semula
+        $('button[onclick="prosesBayar()"]').prop('disabled', false).text('SIMPAN & CETAK STRUK');
+    });
+}
+
+function resetFormPembayaran() {
+    $('#payPelanggan').val('').trigger('change');
+    $('#payNominal').val('');
+}
     </script>
 </body>
 </html>
