@@ -7,85 +7,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* === SISTEM CETAK MULTI-KOMPONEN REVISI TOTAL === */
         @media print {
+            /* Sembunyikan seluruh elemen bawaan aplikasi */
             body * { visibility: hidden !important; }
-            #printable-invoice-area.active-print, #printable-invoice-area.active-print *,
-            #printable-report-area.active-print, #printable-report-area.active-print *,
-            #printable-surat-area.active-print, #printable-surat-area.active-print * {
-                visibility: visible !important;
+            
+            /* Munculkan hanya elemen yang ditandai kelas active-print */
+            .active-print, .active-print * { 
+                visibility: visible !important; 
             }
-            #printable-invoice-area.active-print, #printable-report-area.active-print, #printable-surat-area.active-print {
-                position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; display: block !important;
-                background: white !important; color: black !important; padding: 0 !important;
+            
+            .active-print {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
             }
+
+            /* Khusus Format Kuitansi A5 Kontinu (Landscape) */
+            #printable-invoice-area.active-print {
+                width: 210mm !important;
+                height: 148mm !important;
+                padding: 8mm !important;
+                box-sizing: border-box !important;
+            }
+            
+            @page {
+                margin: 0;
+            }
+            
             .no-print { display: none !important; }
         }
-/* Gaya tampilan Kwitansi */
-.kwitansi-a5 {
-    display: none; /* Sembunyikan di layar monitor normal */
-    width: 210mm;
-    height: 148mm;
-    padding: 10mm;
-    box-sizing: border-box;
-    font-family: 'Courier New', Courier, monospace; /* Gaya kasir/dot-matrix klasik */
-    font-size: 12px;
-}
-
-.kwitansi-header { display: flex; justify-content: space-between; }
-.toko-info h2 { margin: 0; font-size: 18px; color: #198754; }
-.nota-info h1 { margin: 0; font-size: 16px; text-align: right; }
-.garis-pembatas { border-top: 2px dashed #000; margin: 10px 0; }
-.tabel-info-pelanggan { width: 100%; margin-bottom: 15px; }
-.tabel-info-pelanggan td { padding: 3px 0; vertical-align: top;}
-
-.tabel-rincian { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.tabel-rincian th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: left; }
-.tabel-rincian td { padding: 10px 8px; border-bottom: 1px solid #000; }
-.text-right { text-align: right; }
-
-.kwitansi-footer { display: flex; justify-content: space-between; margin-top: 20px; }
-.tanda-tangan { text-align: center; width: 200px; }
-
-/* KUNCI UTAMA UNTUK CETAK PRINTER CONTINUOUS FORM */
-@media print {
-    /* 1. Sembunyikan seluruh tampilan dashboard web aplikasi */
-    body * {
-        visibility: hidden;
-    }
-    
-    /* 2. Hanya munculkan area kwitansi */
-    #print-area, #print-area * {
-        visibility: visible;
-    }
-    
-    #print-area {
-        display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 210mm;
-        height: 148mm;
-    }
-
-    /* 3. Paksa browser menggunakan ukuran A5 Landscape & hilangkan margin bawaan chrome */
-    @page {
-        size: A5 landscape;
-        margin: 0; 
-    }
-    
-    /* Hilangkan header-footer bawaan browser (seperti tulisan URL / tanggal di ujung kertas) */
-    html, body {
-        margin: 0;
-        background: #fff;
-    }
-}
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
     <div id="login-page" class="fixed inset-0 bg-green-900 z-[9999] flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border-t-8 border-yellow-500">
-            <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="mx-auto w-24 mb-4">
+            <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="mx-auto h-24 mb-4 object-contain">
             <h2 class="text-2xl font-bold text-gray-800">Admin CMMSC</h2>
             <input type="password" id="admin-pass" placeholder="Password Admin" class="w-full p-3 border rounded-lg my-4 text-center">
             <button onclick="checkLogin()" class="w-full bg-green-700 text-white py-3 rounded-lg font-bold">MASUK</button>
@@ -96,7 +61,7 @@
         <nav class="bg-white border-b shadow-md p-4 sticky top-0 z-50 no-print">
             <div class="container mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="w-8 h-10">
+                    <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="w-8 h-8 object-contain">
                     <h1 class="font-bold text-green-800">BUMDes CMMSC</h1>
                 </div>
                 <div class="flex gap-3 text-xs font-black uppercase items-center">
@@ -105,7 +70,7 @@
                     <button onclick="showPage('mart')">Kasir</button>
                     <button onclick="showPage('sewa')">Sewa</button>
                     <button onclick="showPage('tagihan')">Tagihan</button>
-                    <button onclick="showPage('pengeluaran')" class="text-red-600 font-black">Pengeluaran</button>
+                    <button onclick="showPage('pengeluaran')">Pengeluaran</button>
                     <button onclick="showPage('laporan')" class="bg-green-700 text-white px-3 py-1 rounded">Laporan</button>
                 </div>
             </div>
@@ -175,9 +140,9 @@
                         <input type="number" id="pos-qty" value="1" class="w-full p-3 border rounded mb-4">
                         <button onclick="addToCart()" class="w-full bg-green-700 text-white py-3 rounded font-bold">Tambah Keranjang</button>
                     </div>
-                    <div id="printable-invoice-area" class="bg-white p-6 rounded shadow border mx-auto w-full max-w-sm">
+                    <div id="printable-mart-invoice" class="bg-white p-6 rounded shadow border mx-auto w-full max-w-sm">
                         <div class="text-center border-b border-dashed pb-3 mb-3">
-                            <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="w-10 mx-auto mb-1">
+                            <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="h-12 mx-auto mb-1 object-contain">
                             <h2 class="font-bold text-sm uppercase">BUMDES MART CMMSC</h2>
                         </div>
                         <div id="cart-list" class="space-y-1 mb-4 text-[10px] font-mono italic"></div>
@@ -197,7 +162,7 @@
 
             <div id="sewa" class="page hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded shadow border-t-4 border-blue-600 h-fit">
+                    <div class="bg-white p-6 rounded shadow border-t-4 border-blue-600 h-fit no-print">
                         <h2 class="font-bold mb-4 text-center uppercase text-blue-800">Penyewaan Jasa</h2>
                         <div class="space-y-4">
                             <div>
@@ -217,19 +182,82 @@
                                 <label class="text-xs font-bold text-gray-500">Nama Penyewa</label>
                                 <input type="text" id="sewa-nama" placeholder="Masukkan Nama Penyewa" class="w-full p-2.5 border rounded font-bold text-sm">
                             </div>
-                            <button onclick="processSewa()" class="w-full bg-blue-700 text-white py-3 rounded font-bold uppercase text-sm tracking-wide shadow">Simpan & Sync Cloud</button>
+                            <button onclick="processSewa()" class="w-full bg-blue-700 text-white py-3 rounded font-bold uppercase text-sm tracking-wide shadow">Simpan & Cetak Kuitansi</button>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded shadow overflow-x-auto">
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded shadow overflow-x-auto no-print">
                         <h3 class="font-bold mb-3 uppercase text-gray-700 border-b pb-2 text-sm">Riwayat Pembayaran Sewa (Lunas)</h3>
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="bg-gray-100 uppercase text-gray-600 font-bold border-b">
-                                    <th class="p-3">Tanggal</th><th class="p-3">Unit / Fasilitas</th><th class="p-3">Nama Penyewa</th><th class="p-3 text-right">Jumlah Bayar</th>
+                                    <th class="p-3">Tanggal</th><th class="p-3">Unit / Fasilitas</th><th class="p-3">Nama Penyewa</th><th class="p-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="sewa-paid-table" class="font-bold text-gray-800"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div id="kuitansi-popup" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 no-print">
+                    <div class="bg-white p-4 rounded-xl max-w-4xl w-full shadow-2xl">
+                        <div class="flex justify-between items-center border-b pb-2 mb-4">
+                            <h3 class="font-bold text-gray-700 text-xs">Pratinjau Cetak Kuitansi (Ukuran Kertas A5)</h3>
+                            <div class="flex gap-2">
+                                <button onclick="printKuitansi()" class="bg-blue-700 text-white px-4 py-1.5 rounded font-bold text-xs shadow">Cetak Sekarang</button>
+                                <button onclick="closeKuitansi()" class="bg-gray-400 text-white px-3 py-1.5 rounded font-bold text-xs">Tutup</button>
+                            </div>
+                        </div>
+
+                        <div id="printable-invoice-area" class="bg-white p-6 border-2 border-black font-sans text-xs text-black w-full" style="aspect-ratio: 210/148;">
+                            <div class="flex justify-between items-center border-b-2 border-black pb-2 mb-3">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="h-12 w-12 object-contain">
+                                    <div>
+                                        <h4 class="font-black uppercase text-[11px] text-green-800 leading-tight">BUMDes Cikahuripan Makmur Mandiri</h4>
+                                        <p class="text-[8px] text-gray-600 font-normal">Desa Cikahuripan, Kec. Klapanunggal | Telp: 08123456789</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <h2 class="text-lg font-black tracking-widest text-gray-800 border-b border-black px-2 inline-block">KUITANSI</h2>
+                                    <p class="text-[9px] font-mono mt-1 text-gray-500">No: <span id="kw-no">KW/2026/0001</span></p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2.5">
+                                <div class="flex">
+                                    <span class="w-32 text-gray-600 font-medium">Telah Diterima Dari</span>
+                                    <span class="mr-2">:</span>
+                                    <span id="kw-dari" class="font-bold uppercase border-b border-dashed border-gray-400 flex-1 pb-0.5">-</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-32 text-gray-600 font-medium">Uang Sejumlah</span>
+                                    <span class="mr-2">:</span>
+                                    <div class="bg-gray-100 px-2 py-1 rounded border border-gray-300 flex-1 italic text-gray-700 font-semibold">
+                                        <span id="kw-terbilang">Nol Rupiah</span>
+                                    </div>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-32 text-gray-600 font-medium">Untuk Pembayaran</span>
+                                    <span class="mr-2">:</span>
+                                    <span id="kw-untuk" class="font-bold border-b border-dashed border-gray-400 flex-1 pb-0.5">-</span>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-end mt-6">
+                                <div class="bg-green-100 border-2 border-green-700 px-4 py-2 rounded-lg">
+                                    <span class="text-[10px] uppercase font-bold text-green-800 block">Jumlah Pembayaran</span>
+                                    <span id="kw-nominal" class="text-lg font-black text-green-900">Rp 0</span>
+                                </div>
+                                <div class="text-center w-48">
+                                    <p class="text-[10px] text-gray-600">Klapanunggal, <span id="kw-tgl">-</span></p>
+                                    <p class="font-bold mt-1 mb-12 text-[10px]">Kasir BUMDes CMMSC</p>
+                                    <div class="border-t border-black w-36 mx-auto"></div>
+                                    <p class="text-[9px] text-gray-500 uppercase mt-0.5 font-bold">Penerima Sah</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -317,7 +345,7 @@
                         
                         <div id="printable-surat-area" class="p-8 font-serif text-sm text-black max-w-2xl mx-auto border bg-white">
                             <div class="flex items-center justify-between border-b-4 border-double border-black pb-3 mb-4">
-                                <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="w-12 h-16 object-contain">
+                                <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="h-16 w-16 object-contain">
                                 <div class="text-center flex-1 mx-2">
                                     <h1 class="text-base font-black uppercase tracking-wide">Badan Usaha Milik Desa (BUMDes)</h1>
                                     <h2 class="text-lg font-black text-green-800 tracking-wider">CIKAHURIPAN MAKMUR MANDIRI</h2>
@@ -360,7 +388,7 @@
                                     </tbody>
                                 </table>
 
-                                <p class="text-xs text-justify">Mengingat dana tersebut akan digunakan kembali untuk pengembangan sarana infrastruktur desa, mohon kerja samanya untuk segera melunasi tagihan sebelum tanggal <strong id="lbl-surat-deadline" class="underline">[Batas Waktu]</strong>. Pembayaran dapat diserahkan ke Kasir BUMDes atau transfer ke Bank Mandiri Rek: <strong>123-XXXX-XXXX</strong> an. <strong>BUMDes Cikahuripan MM</strong>.</p>
+                                <p class="text-xs text-justify">Mengingat dana tersebut akan digunakan kembali untuk pengembangan sarana infrastruktur desa, mohon kerja samanya untuk segera melunasi tagihan sebelum tanggal <strong id="lbl-surat-deadline" class="underline">[Batas Waktu]</strong>. Pembayaran dapat diserahkan ke Kasir BUMDes atau transfer ke Bank BRI Rek: <strong>3700-01-069026-53-3</strong> an. <strong>BUMDes Cikahuripan MM</strong>.</p>
                                 <p class="text-xs italic bg-gray-50 p-2 rounded border border-dashed text-gray-600 font-sans">Catatan: Jika Bapak/Ibu sudah melakukan pembayaran sebelum surat ini sampai, harap abaikan surat ini dan kirimkan nota/bukti bayar ke nomor admin untuk sinkronisasi data cloud.</p>
                                 
                                 <div class="flex justify-end pt-6 font-sans text-xs">
@@ -385,8 +413,8 @@
                 </div>
                 <div id="printable-report-area" class="bg-white p-8 rounded shadow border">
                     <div class="flex justify-between border-b-4 border-double border-black pb-4 mb-4">
-                        <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="w-12">
-                        <div class="text-center">
+                        <img src="https://i.ibb.co.com/yFmswV1D/logo-bumdes.png" class="h-16 w-16 object-contain">
+                        <div class="text-center flex-1">
                             <h1 class="text-lg font-black uppercase">Badan Usaha Milik Desa</h1>
                             <h2 class="text-xl font-black text-green-800">CIKAHURIPAN MAKMUR MANDIRI</h2>
                         </div>
@@ -402,66 +430,9 @@
             </div>
         </div>
     </div>
-    <div id="print-area" class="kwitansi-a5">
-    <div class="kwitansi-header">
-        <div class="toko-info">
-            <h2>BUMDes CMMS</h2>
-            <p>Pengelolaan Kios & Pasar Desa</p>
-            <p class="Kecil">Telp: (021) XXXXXXXX | Email: bumdes@cmms.desa.id</p>
-        </div>
-        <div class="nota-info">
-            <h1>KWITANSI PEMBAYARAN</h1>
-            <p><strong>No. Nota:</strong> <span id="notaNo"></span></p>
-            <p><strong>Tanggal:</strong> <span id="notaTanggal"></span></p>
-        </div>
-    </div>
-    
-    <hr class="garis-pembatas">
 
-    <div class="kwitansi-body">
-        <table class="tabel-info-pelanggan">
-            <tr>
-                <td width="120">Telah Diterima Dari</td>
-                <td width="10">:</td>
-                <td><strong id="notaNama"></strong></td>
-            </tr>
-            <tr>
-                <td>Alamat Kios</td>
-                <td>:</td>
-                <td id="notaAlamat"></td>
-            </tr>
-        </table>
-
-        <table class="tabel-rincian">
-            <thead>
-                <tr>
-                    <th>Deskripsi Pembayaran</th>
-                    <th>Metode</th>
-                    <th class="text-right">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Pembayaran Sewa/Iuran Kios Bulan <span id="notaBulan" style="font-weight: bold;"></span></td>
-                    <td id="notaMetode"></td>
-                    <td class="text-right" id="notaNominal" style="font-weight: bold;"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="kwitansi-footer">
-        <div class="terbilang">
-            </div>
-        <div class="tanda-tangan">
-            <p>Klapanunggal, <span class="tgl-bawah"></span></p>
-            <br><br><br>
-            <p><strong>( Kasir BUMDes )</strong></p>
-        </div>
-    </div>
-</div>
     <script>
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzNGl_LDWfgxIe03MC2uEmoxadkQxoAOplQDHJFWOCgyybBKrEw7N0QYpK4jCuTxZY41A/exec";
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyYl3bchUqgbP5NHORNp7DTG4I8H-C9IESPrY36CH8JpzLeTHQRNkPz46zSpIgangsqIw/exec";
         let items = JSON.parse(localStorage.getItem('cmmsc_v7_items')) || [];
         let transactions = JSON.parse(localStorage.getItem('cmmsc_v7_trans')) || [];
         let cart = [];
@@ -500,31 +471,7 @@
             document.getElementById('inv-jual-label').innerText = "Rp " + jual.toLocaleString();
             return jual;
         }
-        function cetakKwitansi() {
-    // Mengambil data terbaru dari form untuk dimasukkan ke kwitansi
-    let idTerpilih = $('#payPelanggan').val();
-    let p = listPlg.find(x => x[0] == idTerpilih);
-    
-    if(!p) {
-        alert("Pilih pelanggan terlebih dahulu!");
-        return;
-    }
 
-    // Mengisi data ke template kwitansi cetak
-    $('#notaNo').text('INV-' + Date.now().toString().slice(-6)); // Contoh nomor invoice random
-    $('#notaTanggal').text(new Date().toLocaleDateString('id-ID'));
-    $('#notaNama').text(p[1]); // Nama pelanggan
-    $('#notaAlamat').text(p[2]); // Alamat pelanggan
-    $('#notaBulan').text($('#payBulan').val());
-    $('#notaMetode').text($('#payMetode').val());
-    
-    // Format rupiah untuk nominal
-    let nominal = parseFloat($('#payNominal').val());
-    $('#notaNominal').text('Rp ' + nominal.toLocaleString('id-ID'));
-
-    // Trigger perintah cetak bawaan browser
-    window.print();
-}
         function saveInventory() {
             const id = document.getElementById('edit-id').value;
             const nama = document.getElementById('inv-nama').value;
@@ -561,7 +508,7 @@
             calcHargaJual();
         }
 
-        // --- MART & SYNC LOGIC ---
+        // --- MART LOGIC ---
         function renderPOSOptions() {
             document.getElementById('pos-select').innerHTML = items.map(i => `<option value="${i.id}">${i.nama} - Rp ${i.jual.toLocaleString()}</option>`).join('');
         }
@@ -610,12 +557,12 @@
             
             sendToCloud(payload);
 
-            const area = document.getElementById('printable-invoice-area');
+            const area = document.getElementById('printable-mart-invoice');
             area.classList.add('active-print');
             setTimeout(() => { window.print(); area.classList.remove('active-print'); cart = []; renderCart(); showPage('dashboard'); }, 500);
         }
 
-        // --- SEWA LOGIC ---
+        // --- SEWA LOGIC DENGAN KUITANSI UPDATE ---
         function processSewa() {
             const tglInput = document.getElementById('sewa-tgl').value;
             const rawUnit = document.getElementById('sewa-unit').value.split('|');
@@ -623,18 +570,51 @@
             const namaUnit = rawUnit[1];
             const namaPenyewa = document.getElementById('sewa-nama').value;
             
-            if(!tglInput) return alert("Tanggal transaksi wajib diisi!");
-            if(!namaPenyewa) return alert("Nama penyewa wajib diisi!");
+            if(!tglInput || !namaPenyewa) return alert("Harap lengkapi tanggal dan nama penyewa!");
 
             const formattedDate = new Date(tglInput).toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID');
-            const payload = { tgl: formattedDate, unit: "SEWA", desc: `${namaUnit} - ${namaPenyewa}`, method: "TUNAI", profit: harga, omzet: harga };
+            const kwNumber = "KW/" + new Date(tglInput).getFullYear() + "/" + String(transactions.length + 1).padStart(4, '0');
+
+            const payload = { tgl: formattedDate, unit: "SEWA", desc: `${namaUnit} - ${namaPenyewa}`, method: "TUNAI", profit: harga, omzet: harga, kw: kwNumber };
             transactions.push(payload);
             localStorage.setItem('cmmsc_v7_trans', JSON.stringify(transactions));
             
             sendToCloud(payload);
-            alert("Sewa Jasa Berhasil Disimpan & Sinkron Cloud!");
-            document.getElementById('sewa-nama').value = "";
             renderSewaTable();
+            
+            openKuitansi(kwNumber, namaPenyewa, harga, `Pembayaran Sewa ${namaUnit}`, new Date(tglInput).toLocaleDateString('id-ID'));
+            document.getElementById('sewa-nama').value = "";
+        }
+
+        function openKuitansi(no, dari, nominal, untuk, tgl) {
+            document.getElementById('kw-no').innerText = no;
+            document.getElementById('kw-dari').innerText = dari;
+            document.getElementById('kw-nominal').innerText = "Rp " + nominal.toLocaleString('id-ID');
+            document.getElementById('kw-untuk').innerText = untuk;
+            document.getElementById('kw-tgl').innerText = tgl;
+            document.getElementById('kw-terbilang').innerText = angkaToTerbilang(nominal) + " Rupiah";
+            document.getElementById('kuitansi-popup').classList.remove('hidden');
+        }
+
+        function closeKuitansi() {
+            document.getElementById('kuitansi-popup').classList.add('hidden');
+        }
+
+        // FIX MANDATORY: Fungsi Print Kuitansi A5
+        function printKuitansi() {
+            const area = document.getElementById('printable-invoice-area');
+            area.classList.add('active-print');
+            setTimeout(() => { 
+                window.print(); 
+                area.classList.remove('active-print'); 
+            }, 300);
+        }
+
+        function reprintKuitansiByDate(tglShort, fullDesc, nominal, kwNo) {
+            const descParts = fullDesc.split(' - ');
+            const unit = descParts[0];
+            const nama = descParts[1] || "-";
+            openKuitansi(kwNo || "KW-REPRINT", nama, nominal, `Pembayaran Sewa ${unit}`, tglShort);
         }
 
         function renderSewaTable() {
@@ -645,34 +625,34 @@
             }
             document.getElementById('sewa-paid-table').innerHTML = sewaTrans.slice().reverse().map(t => {
                 const descParts = t.desc.split(' - ');
+                const kwNo = t.kw || "KW/2026/0000";
                 return `
                     <tr class="border-b text-xs hover:bg-gray-50">
                         <td class="p-3 text-gray-500 font-mono">${t.tgl.split(' ')[0]}</td>
                         <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded">${descParts[0]}</span></td>
                         <td class="p-3 uppercase">${descParts[1] || '-'}</td>
-                        <td class="p-3 text-right text-green-700">Rp ${t.omzet.toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="reprintKuitansiByDate('${t.tgl.split(' ')[0]}', '${t.desc}', ${t.omzet}, '${kwNo}')" class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">Print A5</button>
+                        </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // --- LOGIC PENGELUARAN / OUTFLOW (BARU) ---
+        // --- PENGELUARAN LOGIC ---
         function processPengeluaran() {
             const tglInput = document.getElementById('out-tgl').value;
             const kat = document.getElementById('out-kategori').value;
             const desc = document.getElementById('out-desc').value || "Tanpa Keterangan";
             const jumlah = parseInt(document.getElementById('out-jumlah').value);
 
-            if(!tglInput || isNaN(jumlah) || jumlah <= 0) return alert("Isi tanggal dan jumlah nominal uang dengan benar!");
+            if(!tglInput || isNaN(jumlah) || jumlah <= 0) return alert("Isi data dengan benar!");
 
             const formattedDate = new Date(tglInput).toLocaleDateString('id-ID') + " " + new Date().toLocaleTimeString('id-ID');
-            
-            // Pengeluaran bernilai NEGATIF pada kolom profit (Laba) agar otomatis memotong di dashboard/laporan
             const payload = { tgl: formattedDate, unit: "Beban", desc: `[${kat}] ${desc}`, method: "TUNAI", profit: -jumlah, omzet: 0 };
             
             transactions.push(payload);
             localStorage.setItem('cmmsc_v7_trans', JSON.stringify(transactions));
-            
             sendToCloud(payload);
             alert("Pengeluaran kas berhasil dicatat!");
             document.getElementById('out-desc').value = "";
@@ -683,23 +663,35 @@
         function renderExpenseTable() {
             const expTrans = transactions.filter(t => t.unit === 'Beban');
             if(expTrans.length === 0) {
-                document.getElementById('expense-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Belum ada pengeluaran kas dicatat.</td></tr>`;
+                document.getElementById('expense-table').innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic">Belum ada pengeluaran kas.</td></tr>`;
                 return;
             }
             document.getElementById('expense-table').innerHTML = expTrans.slice().reverse().map(t => {
-                const nominal = Math.abs(t.profit); // jadikan positif untuk visualisasi tabel
                 return `
                     <tr class="border-b text-xs hover:bg-gray-50">
                         <td class="p-3 text-gray-500 font-mono">${t.tgl.split(' ')[0]}</td>
                         <td class="p-3 text-red-700 font-bold">${t.desc.substring(t.desc.indexOf("[")+1, t.desc.indexOf("]"))}</td>
                         <td class="p-3 text-gray-600">${t.desc.substring(t.desc.indexOf("]")+2)}</td>
-                        <td class="p-3 text-right text-red-600">Rp ${nominal.toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right text-red-600">Rp ${Math.abs(t.profit).toLocaleString('id-ID')}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // --- SURAT TAGIHAN LOGIC ---
+        // --- CONVERTER TERBILANG ---
+        function angkaToTerbilang(n) {
+            const fungsiTerbilang = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            if (n < 12) return fungsiTerbilang[n];
+            else if (n < 20) return angkaToTerbilang(n - 10) + " Belas";
+            else if (n < 100) return angkaToTerbilang(Math.floor(n / 10)) + " Puluh " + angkaToTerbilang(n % 10);
+            else if (n < 200) return "Seratus " + angkaToTerbilang(n - 100);
+            else if (n < 1000) return angkaToTerbilang(Math.floor(n / 100)) + " Ratus " + angkaToTerbilang(n % 100);
+            else if (n < 2000) return "Seribu " + angkaToTerbilang(n - 1000);
+            else if (n < 1000000) return angkaToTerbilang(Math.floor(n / 1000)) + " Ribu " + angkaToTerbilang(n % 1000);
+            return String(n);
+        }
+
+        // --- SURAT TAGIHAN LOGIC FIX ---
         function generateSurat() {
             const nama = document.getElementById('tagihan-nama').value || "[Nama Penyewa]";
             const unit = document.getElementById('tagihan-unit').value;
@@ -770,7 +762,6 @@
             document.getElementById('stat-beban').innerText = "Rp " + b.toLocaleString();
             document.getElementById('stat-profit').innerText = "Rp " + p.toLocaleString();
             
-            // Manipulasi warna label Laba jika minus/merah
             if (p < 0) { document.getElementById('stat-profit').className = "text-xl font-black text-red-400"; }
             else { document.getElementById('stat-profit').className = "text-xl font-black text-yellow-400"; }
 
@@ -778,71 +769,6 @@
             if(window.ch) window.ch.destroy();
             window.ch = new Chart(ctx, { type: 'bar', data: { labels: ['MART', 'SEWA', 'PENGELUARAN'], datasets: [{ label: 'Keuangan Kas', data: [m, s, b], backgroundColor: ['#10b981', '#1d4ed8', '#ef4444'] }] }, options: { maintainAspectRatio: false } });
         }
-// Paste URL Web App /exec yang sudah dicopy dari Langkah 1 di sini
-const urlWebApi = "PASANG_URL_WEB_APP_PRAP_SINI_YANG_BERAKHIRAN_EXEC";
-
-function prosesBayar() {
-    // 1. Ambil data dari elemen-elemen form input HTML Bapak
-    let pelangganNama = $('#payPelanggan option:selected').text();
-    let bulanBayar = $('#payBulan').val();
-    let nominalBayar = parseFloat($('#payNominal').val()) || 0;
-    let metodeBayar = $('#payMetode').val();
-    
-    if (!pelangganNama || pelangganNama === "-- Pilih --") {
-        alert("Pilih pelanggan terlebih dahulu!");
-        return;
-    }
-
-    // 2. Bungkus data ke dalam objek JSON sesuai kebutuhan kode.gs Bapak
-    let payloadData = {
-        tgl: new Date().toLocaleDateString('id-ID'), // Tanggal hari ini
-        unit: "Kios & Pasar Desa",                  // Sesuai kolom "Unit Usaha"
-        desc: `Pembayaran Iuran ${pelangganNama} Bulan ${bulanBayar}`, // Kolom "Keterangan"
-        method: metodeBayar,                         // Kolom "Metode Pembayaran"
-        profit: nominalBayar,                        // Kolom "Laba (Rp)"
-        omzet: nominalBayar                          // Kolom "Omzet (Rp)"
-    };
-
-    // Tampilkan animasi loading atau kunci tombol agar tidak diklik dua kali
-    $('button[onclick="prosesBayar()"]').prop('disabled', true).text('Menyimpan...');
-
-    // 3. Kirim data ke Google Apps Script menggunakan FETCH API
-    fetch(urlWebApi, {
-        method: "POST",
-        mode: "no-cors", // Wajib menggunakan no-cors jika mengalami kendala CORS pre-flight
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payloadData)
-    })
-    .then(response => {
-        // Karena menggunakan mode: 'no-cors', browser tidak bisa membaca isi respon sukses secara detail,
-        // namun data dipastikan tetap masuk ke Google Sheets jika status jaringan oke.
-        
-        alert("Data Pembayaran Berhasil Disinkronisasi ke Google Sheets!");
-        
-        // Panggil fungsi cetak kwitansi A5 yang sudah kita buat sebelumnya
-        if (typeof cetakKwitansi === "function") {
-            cetakKwitansi(); 
-        }
-
-        // Kembalikan form ke kondisi kosong setelah sukses
-        resetFormPembayaran();
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("Gagal sinkronisasi data ke cloud. Periksa koneksi internet.");
-    })
-    .finally(() => {
-        // Kembalikan tombol ke kondisi semula
-        $('button[onclick="prosesBayar()"]').prop('disabled', false).text('SIMPAN & CETAK STRUK');
-    });
-}
-
-function resetFormPembayaran() {
-    $('#payPelanggan').val('').trigger('change');
-    $('#payNominal').val('');
-}
     </script>
 </body>
 </html>
