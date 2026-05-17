@@ -7,39 +7,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* === SISTEM CETAK MULTI-KOMPONEN REVISI TOTAL === */
+        /* === SISTEM CETAK REVISI: POSITIONING & MARGIN KIRI 25MM === */
         @media print {
             /* Sembunyikan seluruh elemen bawaan aplikasi */
             body * { visibility: hidden !important; }
             
-            /* Munculkan hanya elemen yang ditandai kelas active-print */
+            /* Munculkan hanya elemen yang aktif dicetak */
             .active-print, .active-print * { 
                 visibility: visible !important; 
             }
             
-            .active-print {
+            /* CSS Utama untuk Surat Tagihan (Potrait) */
+            #printable-surat-area.active-print {
                 position: absolute !important;
-                left: 0 !important;
                 top: 0 !important;
-                width: 100% !important;
+                /* Set margin kiri presisi 25mm sesuai instruksi */
+                left: 25mm !important; 
+                width: 165mm !important; /* Otomatis sisa lebar kertas A4 standar (210mm - 25mm - kanan) */
                 background: white !important;
                 color: black !important;
                 padding: 0 !important;
-                margin: 0 !important;
                 box-shadow: none !important;
                 border: none !important;
             }
 
-            /* Khusus Format Kuitansi A5 Kontinu (Landscape) */
+            /* CSS Utama untuk Kuitansi Jasa (A5 Landscape) */
             #printable-invoice-area.active-print {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                margin: 0 auto !important; /* Kuitansi tetap center-align otomatis */
                 width: 210mm !important;
                 height: 148mm !important;
                 padding: 8mm !important;
                 box-sizing: border-box !important;
+                background: white !important;
+                color: black !important;
+                box-shadow: none !important;
+                border: 2px solid black !important;
             }
             
+            /* Pengaturan dasar halaman cetak browser */
             @page {
-                margin: 0;
+                margin: 0; /* Margin browser dinonaktifkan agar CSS di atas akurat */
             }
             
             .no-print { display: none !important; }
